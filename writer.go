@@ -9,7 +9,6 @@ import (
 )
 
 // NpyWriter can write data from a Go slice to a Numpy binary array.
-// Fields with defaults can
 type NpyWriter struct {
 
 	// Defaults to little endian, but can be set to
@@ -25,14 +24,16 @@ type NpyWriter struct {
 	// (column major order) before writing the data.
 	ColumnMajor bool
 
-	stream io.WriteCloser
+	w io.WriteCloser
 }
 
-// NewWriter returns a NpyWriter object that can be used to write data
-// to a Numpy binary format file.  After creating this object, call
-// one of the WriteXX methods to write array data to the file.  The
-// file is automatically closed at the end of that call.  Only one
-// array can be written to each file.
+// NewWriter returns a NpyWriter that can be used to write data to a
+// Numpy binary format file.  After creation, call one of the WriteXX
+// methods to write array data to the file.  The file is automatically
+// closed at the end of that call.  Only one array can be written.
+//
+// Note: this may be changed to take a io.Writer in the future.
+// Consider using NewFileWriter or WriterFromStream instead.
 func NewWriter(fname string) (*NpyWriter, error) {
 
 	fid, err := os.Create(fname)
@@ -40,7 +41,32 @@ func NewWriter(fname string) (*NpyWriter, error) {
 		return nil, err
 	}
 
-	wtr := &NpyWriter{stream: fid, Endian: binary.LittleEndian}
+	return WriterFromStream(fid)
+}
+
+// NewFileWriter returns a NpyWriter that can be used to write data to
+// a Numpy binary format file.  After creation, call one of the
+// WriteXX methods to write array data to the file.  The file is
+// automatically closed at the end of that call.  Only one array can
+// be written.
+func NewFileWriter(fname string) (*NpyWriter, error) {
+
+	fid, err := os.Create(fname)
+	if err != nil {
+		return nil, err
+	}
+
+	return WriterFromStream(fid)
+}
+
+// NewWriter returns a NpyWriter that can be used to write data to an
+// io.WriteCloser is the Numpy binary format.  After creation, call
+// one of the WriteXX methods to write array data to the writer.  The
+// file is automatically closed at the end of that call.  Only one
+// array can be written.
+func WriterFromStream(w io.WriteCloser) (*NpyWriter, error) {
+
+	wtr := &NpyWriter{w: w, Endian: binary.LittleEndian}
 	return wtr, nil
 }
 
@@ -53,13 +79,13 @@ func (wtr *NpyWriter) WriteFloat64(data []float64) error {
 	}
 
 	for _, v := range data {
-		err := binary.Write(wtr.stream, wtr.Endian, v)
+		err := binary.Write(wtr.w, wtr.Endian, v)
 		if err != nil {
 			return err
 		}
 	}
 
-	wtr.stream.Close()
+	wtr.w.Close()
 
 	return nil
 }
@@ -73,13 +99,13 @@ func (wtr *NpyWriter) WriteFloat32(data []float32) error {
 	}
 
 	for _, v := range data {
-		err := binary.Write(wtr.stream, wtr.Endian, v)
+		err := binary.Write(wtr.w, wtr.Endian, v)
 		if err != nil {
 			return err
 		}
 	}
 
-	wtr.stream.Close()
+	wtr.w.Close()
 
 	return nil
 }
@@ -93,13 +119,13 @@ func (wtr *NpyWriter) WriteInt64(data []int64) error {
 	}
 
 	for _, v := range data {
-		err := binary.Write(wtr.stream, wtr.Endian, v)
+		err := binary.Write(wtr.w, wtr.Endian, v)
 		if err != nil {
 			return err
 		}
 	}
 
-	wtr.stream.Close()
+	wtr.w.Close()
 
 	return nil
 }
@@ -113,13 +139,13 @@ func (wtr *NpyWriter) WriteInt32(data []int32) error {
 	}
 
 	for _, v := range data {
-		err := binary.Write(wtr.stream, wtr.Endian, v)
+		err := binary.Write(wtr.w, wtr.Endian, v)
 		if err != nil {
 			return err
 		}
 	}
 
-	wtr.stream.Close()
+	wtr.w.Close()
 
 	return nil
 }
@@ -133,13 +159,13 @@ func (wtr *NpyWriter) WriteInt16(data []int16) error {
 	}
 
 	for _, v := range data {
-		err := binary.Write(wtr.stream, wtr.Endian, v)
+		err := binary.Write(wtr.w, wtr.Endian, v)
 		if err != nil {
 			return err
 		}
 	}
 
-	wtr.stream.Close()
+	wtr.w.Close()
 
 	return nil
 }
@@ -153,30 +179,30 @@ func (wtr *NpyWriter) WriteInt8(data []int8) error {
 	}
 
 	for _, v := range data {
-		err := binary.Write(wtr.stream, wtr.Endian, v)
+		err := binary.Write(wtr.w, wtr.Endian, v)
 		if err != nil {
 			return err
 		}
 	}
 
-	wtr.stream.Close()
+	wtr.w.Close()
 
 	return nil
 }
 
 func (wtr *NpyWriter) write_header(dtype string, length int) error {
 
-	n, err := wtr.stream.Write([]byte("\x93NUMPY"))
+	n, err := wtr.w.Write([]byte("\x93NUMPY"))
 	if err != nil {
 		return err
 	} else if n != 6 {
 		return fmt.Errorf("unable to write magic number")
 	}
-	err = binary.Write(wtr.stream, binary.LittleEndian, uint8(1))
+	err = binary.Write(wtr.w, binary.LittleEndian, uint8(1))
 	if err != nil {
 		return err
 	}
-	err = binary.Write(wtr.stream, binary.LittleEndian, uint8(0))
+	err = binary.Write(wtr.w, binary.LittleEndian, uint8(0))
 	if err != nil {
 		return err
 	}
@@ -210,11 +236,11 @@ func (wtr *NpyWriter) write_header(dtype string, length int) error {
 		header = header + strings.Repeat(" ", pad)
 	}
 
-	err = binary.Write(wtr.stream, binary.LittleEndian, uint16(len(header)))
+	err = binary.Write(wtr.w, binary.LittleEndian, uint16(len(header)))
 	if err != nil {
 		return err
 	}
-	n, err = wtr.stream.Write([]byte(header))
+	n, err = wtr.w.Write([]byte(header))
 	if err != nil {
 		return err
 	} else if n != len(header) {

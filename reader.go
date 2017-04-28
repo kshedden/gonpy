@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,7 +18,7 @@ type NpyReader struct {
 	// The shape of the array as specified in the file.
 	Shape []int
 
-	stream io.Reader
+	r io.Reader
 
 	// If true, the data are flattened in column-major order,
 	// otherwise they are flattened in row-major order.
@@ -26,22 +27,36 @@ type NpyReader struct {
 	n_elt int
 }
 
-// FromStream returns a NpyReader object that can be used to obtaine
-// the array data as a Go slice of a specific numeric type.
-func FromStream(stream io.Reader) (*NpyReader, error) {
+// NewFileReader returns a NpyReader that can be used to obtain array
+// data from the given file.  Call one of the GetXX methods to obtain
+// the slice.
+func NewFileReader(f string) (*NpyReader, error) {
+
+	fid, err := os.Open(f)
+	if err != nil {
+		return nil, err
+	}
+	r, err := NewReader(fid)
+	return r, err
+}
+
+// NewReader returns a NpyReader that can be used to obtain array data
+// as a Go slice.  The Go slice has a type matching the dtype in the
+// Numpy file.  Call one of the GetXX methods to obtain the slice.
+func NewReader(r io.Reader) (*NpyReader, error) {
 
 	b := make([]byte, 6)
-	n, err := stream.Read(b)
+	n, err := r.Read(b)
 	if err != nil {
 		return nil, err
 	} else if n != 6 {
-		return nil, fmt.Errorf("Stream appears to be truncated")
+		return nil, fmt.Errorf("Input appears to be truncated")
 	} else if string(b) != "\x93NUMPY" {
 		return nil, fmt.Errorf("Not npy format data (wrong magic number)")
 	}
 
 	var version uint8
-	err = binary.Read(stream, binary.LittleEndian, &version)
+	err = binary.Read(r, binary.LittleEndian, &version)
 	if err != nil {
 		return nil, err
 	} else if version != 1 {
@@ -49,7 +64,7 @@ func FromStream(stream io.Reader) (*NpyReader, error) {
 	}
 
 	var minor uint8
-	err = binary.Read(stream, binary.LittleEndian, &minor)
+	err = binary.Read(r, binary.LittleEndian, &minor)
 	if err != nil {
 		return nil, err
 	} else if minor != 0 {
@@ -57,17 +72,17 @@ func FromStream(stream io.Reader) (*NpyReader, error) {
 	}
 
 	var header_length uint16
-	err = binary.Read(stream, binary.LittleEndian, &header_length)
+	err = binary.Read(r, binary.LittleEndian, &header_length)
 	if err != nil {
 		return nil, err
 	}
 
 	header_bytes := make([]byte, header_length)
-	n, err = stream.Read(header_bytes)
+	n, err = r.Read(header_bytes)
 	if err != nil {
 		return nil, err
 	} else if uint16(n) != header_length {
-		return nil, fmt.Errorf("Stream appears to be truncated")
+		return nil, fmt.Errorf("Input appears to be truncated")
 	}
 
 	// Get the dtype
@@ -117,9 +132,19 @@ func FromStream(stream io.Reader) (*NpyReader, error) {
 	}
 
 	rdr := &NpyReader{dtype: dtype[1:], ColumnMajor: fortran_order == "True",
-		Shape: shape, endian: endian, n_elt: n_elt, stream: stream}
+		Shape: shape, endian: endian, n_elt: n_elt, r: r}
 
 	return rdr, nil
+
+}
+
+// ReaderFromStream returns a NpyReader that can be used to obtain the
+// array data as a Go slice of a specific numeric type.
+//
+// Deprecated: use NewReader instead (April, 2017)
+func ReaderFromStream(stream io.Reader) (*NpyReader, error) {
+	rdr, err := NewReader(stream)
+	return rdr, err
 }
 
 // GetFloat64 returns the array data from the npy file as a slice of
@@ -130,7 +155,7 @@ func (rdr *NpyReader) GetFloat64() ([]float64, error) {
 	}
 	data := make([]float64, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.stream, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +172,7 @@ func (rdr *NpyReader) GetFloat32() ([]float32, error) {
 	}
 	data := make([]float32, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.stream, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -164,7 +189,7 @@ func (rdr *NpyReader) GetInt8() ([]int8, error) {
 	}
 	data := make([]int8, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.stream, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -181,7 +206,7 @@ func (rdr *NpyReader) GetInt16() ([]int16, error) {
 	}
 	data := make([]int16, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.stream, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -198,7 +223,7 @@ func (rdr *NpyReader) GetInt32() ([]int32, error) {
 	}
 	data := make([]int32, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.stream, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -215,7 +240,7 @@ func (rdr *NpyReader) GetInt64() ([]int64, error) {
 	}
 	data := make([]int64, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.stream, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.endian, &data[k])
 		if err != nil {
 			return nil, err
 		}

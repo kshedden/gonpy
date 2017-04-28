@@ -36,7 +36,7 @@ func Test_float64(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		rdr, err := FromStream(fid)
+		rdr, err := ReaderFromStream(fid)
 		if err != nil {
 			panic(err)
 		}
@@ -67,7 +67,7 @@ func Test_float32(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := FromStream(fid)
+	rdr, err := ReaderFromStream(fid)
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +97,7 @@ func Test_int64(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := FromStream(fid)
+	rdr, err := ReaderFromStream(fid)
 	if err != nil {
 		panic(err)
 	}
@@ -127,7 +127,7 @@ func Test_int32(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := FromStream(fid)
+	rdr, err := ReaderFromStream(fid)
 	if err != nil {
 		panic(err)
 	}
@@ -157,7 +157,7 @@ func Test_int16(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := FromStream(fid)
+	rdr, err := ReaderFromStream(fid)
 	if err != nil {
 		panic(err)
 	}
@@ -187,7 +187,7 @@ func Test_int8(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := FromStream(fid)
+	rdr, err := ReaderFromStream(fid)
 	if err != nil {
 		panic(err)
 	}

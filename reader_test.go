@@ -1,7 +1,6 @@
 package gonpy
 
 import (
-	//"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -91,7 +90,7 @@ func Test_i1(t *testing.T) {
 			panic(err)
 		}
 
-		rdr, err := FromStream(fid)
+		rdr, err := NewReader(fid)
 		if err != nil {
 			panic(err)
 		}
@@ -117,7 +116,28 @@ func Test_f8(t *testing.T) {
 			panic(err)
 		}
 
-		rdr, err := FromStream(fid)
+		rdr, err := NewReader(fid)
+		if err != nil {
+			panic(err)
+		}
+		data, err := rdr.GetFloat64()
+		if err != nil {
+			panic(err)
+		}
+
+		if !check_float64(data) {
+			t.Fail()
+		}
+	}
+}
+
+func Test_f8_file(t *testing.T) {
+
+	files := get_flist("f8")
+
+	for _, fname := range files {
+
+		rdr, err := NewFileReader(path.Join("data", fname))
 		if err != nil {
 			panic(err)
 		}
@@ -143,7 +163,7 @@ func Test_f4(t *testing.T) {
 			panic(err)
 		}
 
-		rdr, err := FromStream(fid)
+		rdr, err := NewReader(fid)
 		if err != nil {
 			panic(err)
 		}
@@ -169,7 +189,7 @@ func Test_i8(t *testing.T) {
 			panic(err)
 		}
 
-		rdr, err := FromStream(fid)
+		rdr, err := NewReader(fid)
 		if err != nil {
 			panic(err)
 		}
@@ -196,7 +216,7 @@ func Test_i4(t *testing.T) {
 			panic(err)
 		}
 
-		rdr, err := FromStream(fid)
+		rdr, err := NewReader(fid)
 		if err != nil {
 			panic(err)
 		}
@@ -223,7 +243,7 @@ func Test_i2(t *testing.T) {
 			panic(err)
 		}
 
-		rdr, err := FromStream(fid)
+		rdr, err := NewReader(fid)
 		if err != nil {
 			panic(err)
 		}
