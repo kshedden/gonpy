@@ -198,7 +198,7 @@ func (wtr *NpyWriter) write_header(dtype string, length int) error {
 	} else if n != 6 {
 		return fmt.Errorf("unable to write magic number")
 	}
-	err = binary.Write(wtr.w, binary.LittleEndian, uint8(1))
+	err = binary.Write(wtr.w, binary.LittleEndian, uint8(2))
 	if err != nil {
 		return err
 	}
@@ -231,12 +231,12 @@ func (wtr *NpyWriter) write_header(dtype string, length int) error {
 
 	header := fmt.Sprintf("{'descr': '%s', 'fortran_order': %s, 'shape': %s,}",
 		dtype, cmaj, shape_string)
-	pad := 16 - ((10 + len(header)) % 16)
+	pad := 32 - ((10 + len(header)) % 32)
 	if pad > 0 {
 		header = header + strings.Repeat(" ", pad)
 	}
 
-	err = binary.Write(wtr.w, binary.LittleEndian, uint16(len(header)))
+	err = binary.Write(wtr.w, binary.LittleEndian, uint32(len(header)))
 	if err != nil {
 		return err
 	}
