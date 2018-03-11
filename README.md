@@ -7,6 +7,10 @@ The npy file specification is here:
 
 http://docs.scipy.org/doc/numpy/neps/npy-format.html
 
+The documentation for this package can be found here:
+
+https://godoc.org/github.com/kshedden/gonpy
+
 When reading a multidimensional array, the data are returned as a
 one-dimensional slice that has been flattened as specified by the
 ColumnMajor field in the NpyReader struct.  If ColumnMajor is true,

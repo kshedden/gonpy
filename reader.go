@@ -25,18 +25,21 @@ type NpyReader struct {
 	// The shape of the array as specified in the file.
 	Shape []int
 
+	// Read the data from this source
 	r io.Reader
 
 	// If true, the data are flattened in column-major order,
 	// otherwise they are flattened in row-major order.
 	ColumnMajor bool
 
+	// Number of elements in the array to be read (obtained from
+	// header).
 	n_elt int
 }
 
-// NewFileReader returns a NpyReader that can be used to obtain array
-// data from the given file.  Call one of the GetXX methods to obtain
-// the slice.
+// NewFileReader is a convenience method returning a NpyReader that
+// can be used to obtain array data from the given named file.  Call
+// one of the GetXXX methods to obtain the data slice.
 func NewFileReader(f string) (*NpyReader, error) {
 
 	fid, err := os.Open(f)
