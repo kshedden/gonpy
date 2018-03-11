@@ -12,8 +12,15 @@ import (
 
 // NpyReader can read data from a Numpy binary array into a Go slice.
 type NpyReader struct {
-	dtype  string
+
+	// The numpy data type of the array
+	dtype string
+
+	// The endianness of the binary data
 	endian binary.ByteOrder
+
+	// The version number of the file format
+	version int
 
 	// The shape of the array as specified in the file.
 	Shape []int
@@ -45,6 +52,7 @@ func NewFileReader(f string) (*NpyReader, error) {
 // Numpy file.  Call one of the GetXX methods to obtain the slice.
 func NewReader(r io.Reader) (*NpyReader, error) {
 
+	// Check the magic number
 	b := make([]byte, 6)
 	n, err := r.Read(b)
 	if err != nil {
@@ -55,34 +63,46 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 		return nil, fmt.Errorf("Not npy format data (wrong magic number)")
 	}
 
+	// Get the major version number
 	var version uint8
 	err = binary.Read(r, binary.LittleEndian, &version)
 	if err != nil {
 		return nil, err
-	} else if version != 1 {
-		return nil, fmt.Errorf("Can only read npy version 1")
+	}
+	if version != 1 && version != 2 {
+		return nil, fmt.Errorf("Invalid version number %d", version)
 	}
 
+	// Check the minor version number
 	var minor uint8
 	err = binary.Read(r, binary.LittleEndian, &minor)
 	if err != nil {
 		return nil, err
-	} else if minor != 0 {
-		return nil, fmt.Errorf("Can only read npy version 1")
+	}
+	if minor != 0 {
+		return nil, fmt.Errorf("Invalid minor version number %d", version)
 	}
 
-	var header_length uint16
-	err = binary.Read(r, binary.LittleEndian, &header_length)
+	// Get the size in bytes of the header
+	var header_length int
+	if version == 1 {
+		var hl uint16
+		err = binary.Read(r, binary.LittleEndian, &hl)
+		header_length = int(hl)
+	} else {
+		var hl uint32
+		err = binary.Read(r, binary.LittleEndian, &hl)
+		header_length = int(hl)
+	}
 	if err != nil {
 		return nil, err
 	}
 
+	// Read the header
 	header_bytes := make([]byte, header_length)
-	n, err = r.Read(header_bytes)
+	_, err = r.Read(header_bytes)
 	if err != nil {
 		return nil, err
-	} else if uint16(n) != header_length {
-		return nil, fmt.Errorf("Input appears to be truncated")
 	}
 
 	// Get the dtype
@@ -125,14 +145,21 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 	}
 
 	var endian binary.ByteOrder
-	if dtype == ">" {
+	if strings.HasPrefix(dtype, ">") {
 		endian = binary.BigEndian
 	} else {
+		// Default
 		endian = binary.LittleEndian
 	}
 
-	rdr := &NpyReader{dtype: dtype[1:], ColumnMajor: fortran_order == "True",
-		Shape: shape, endian: endian, n_elt: n_elt, r: r}
+	rdr := &NpyReader{
+		dtype:       dtype[1:],
+		ColumnMajor: fortran_order == "True",
+		Shape:       shape,
+		endian:      endian,
+		n_elt:       n_elt,
+		r:           r,
+	}
 
 	return rdr, nil
 

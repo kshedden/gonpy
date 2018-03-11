@@ -18,6 +18,6 @@ package gonpy
 
   Unsigned numeric data types, fixed-width string types, compound
   dtypes, record arrays, and time types are not supported (file an
-  issue if any of these are needed).  Python object types are of
-  course not supported.
+  issue if any of these are needed).  Python object types are not
+  supported.
 */

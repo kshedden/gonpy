@@ -24,6 +24,9 @@ type NpyWriter struct {
 	// (column major order) before writing the data.
 	ColumnMajor bool
 
+	// Defaults to 1, can be set to 2 before writing the data.
+	Version int
+
 	w io.WriteCloser
 }
 
@@ -66,11 +69,16 @@ func NewFileWriter(fname string) (*NpyWriter, error) {
 // array can be written.
 func WriterFromStream(w io.WriteCloser) (*NpyWriter, error) {
 
-	wtr := &NpyWriter{w: w, Endian: binary.LittleEndian}
+	wtr := &NpyWriter{
+		w:       w,
+		Endian:  binary.LittleEndian,
+		Version: 1,
+	}
+
 	return wtr, nil
 }
 
-// WriteFloat64 writes a float64 slice to the npy format file.
+// WriteFloat64 writes a float64 slice in npy format.
 func (wtr *NpyWriter) WriteFloat64(data []float64) error {
 
 	err := wtr.write_header("f8", len(data))
@@ -90,7 +98,7 @@ func (wtr *NpyWriter) WriteFloat64(data []float64) error {
 	return nil
 }
 
-// WriteFloat32 writes a float32 slice to the npy format file.
+// WriteFloat32 writes a float32 slice in npy format.
 func (wtr *NpyWriter) WriteFloat32(data []float32) error {
 
 	err := wtr.write_header("f4", len(data))
@@ -110,7 +118,7 @@ func (wtr *NpyWriter) WriteFloat32(data []float32) error {
 	return nil
 }
 
-// WriteInt64 writes a int64 slice to the npy format file.
+// WriteInt64 writes a int64 slice in npy format.
 func (wtr *NpyWriter) WriteInt64(data []int64) error {
 
 	err := wtr.write_header("i8", len(data))
@@ -130,7 +138,7 @@ func (wtr *NpyWriter) WriteInt64(data []int64) error {
 	return nil
 }
 
-// WriteInt32 writes a int32 slice to the npy format file.
+// WriteInt32 writes a int32 slice in npy format.
 func (wtr *NpyWriter) WriteInt32(data []int32) error {
 
 	err := wtr.write_header("i4", len(data))
@@ -150,7 +158,7 @@ func (wtr *NpyWriter) WriteInt32(data []int32) error {
 	return nil
 }
 
-// WriteInt16 writes a int16 slice to the npy format file.
+// WriteInt16 writes a int16 slice in npy format.
 func (wtr *NpyWriter) WriteInt16(data []int16) error {
 
 	err := wtr.write_header("i2", len(data))
@@ -170,7 +178,7 @@ func (wtr *NpyWriter) WriteInt16(data []int16) error {
 	return nil
 }
 
-// WriteInt8 writes a int8 slice to the npy format file.
+// WriteInt8 writes a int8 slice in npy format.
 func (wtr *NpyWriter) WriteInt8(data []int8) error {
 
 	err := wtr.write_header("i1", len(data))
@@ -192,16 +200,16 @@ func (wtr *NpyWriter) WriteInt8(data []int8) error {
 
 func (wtr *NpyWriter) write_header(dtype string, length int) error {
 
-	n, err := wtr.w.Write([]byte("\x93NUMPY"))
-	if err != nil {
-		return err
-	} else if n != 6 {
-		return fmt.Errorf("unable to write magic number")
-	}
-	err = binary.Write(wtr.w, binary.LittleEndian, uint8(1))
+	_, err := wtr.w.Write([]byte("\x93NUMPY"))
 	if err != nil {
 		return err
 	}
+
+	err = binary.Write(wtr.w, binary.LittleEndian, uint8(wtr.Version))
+	if err != nil {
+		return err
+	}
+
 	err = binary.Write(wtr.w, binary.LittleEndian, uint8(0))
 	if err != nil {
 		return err
@@ -231,20 +239,27 @@ func (wtr *NpyWriter) write_header(dtype string, length int) error {
 
 	header := fmt.Sprintf("{'descr': '%s', 'fortran_order': %s, 'shape': %s,}",
 		dtype, cmaj, shape_string)
+
 	pad := 16 - ((10 + len(header)) % 16)
+	if wtr.Version == 2 {
+		pad = 32 - ((10 + len(header)) % 32)
+	}
 	if pad > 0 {
-		header = header + strings.Repeat(" ", pad)
+		header += strings.Repeat(" ", pad)
 	}
 
-	err = binary.Write(wtr.w, binary.LittleEndian, uint16(len(header)))
+	if wtr.Version == 1 {
+		err = binary.Write(wtr.w, binary.LittleEndian, uint16(len(header)))
+	} else {
+		err = binary.Write(wtr.w, binary.LittleEndian, uint32(len(header)))
+	}
 	if err != nil {
 		return err
 	}
-	n, err = wtr.w.Write([]byte(header))
+
+	_, err = wtr.w.Write([]byte(header))
 	if err != nil {
 		return err
-	} else if n != len(header) {
-		return fmt.Errorf("unable to write header")
 	}
 
 	return nil
