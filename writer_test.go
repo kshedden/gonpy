@@ -11,7 +11,7 @@ func Test_float64(t *testing.T) {
 
 	for shape := 0; shape < 4; shape++ {
 
-		wtr, err := NewWriter("data/tmp.npy")
+		wtr, err := NewFileWriter("data/tmp.npy")
 		if err != nil {
 			panic(err)
 		}
@@ -32,11 +32,11 @@ func Test_float64(t *testing.T) {
 			panic(err)
 		}
 
-		fid, err := os.Open("data/tmp.npy")
+		r, err := os.Open("data/tmp.npy")
 		if err != nil {
 			panic(err)
 		}
-		rdr, err := ReaderFromStream(fid)
+		rdr, err := NewReader(r)
 		if err != nil {
 			panic(err)
 		}
@@ -54,7 +54,7 @@ func Test_float32(t *testing.T) {
 
 	data := []float32{0, 1, 2, 3, 4, 5, 6, 7}
 
-	wtr, err := NewWriter("data/tmp.npy")
+	wtr, err := NewFileWriter("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
@@ -63,11 +63,11 @@ func Test_float32(t *testing.T) {
 		panic(err)
 	}
 
-	fid, err := os.Open("data/tmp.npy")
+	r, err := os.Open("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := ReaderFromStream(fid)
+	rdr, err := NewReader(r)
 	if err != nil {
 		panic(err)
 	}
@@ -84,7 +84,7 @@ func Test_int64(t *testing.T) {
 
 	data := []int64{0, 1, 2, 3, 4, 5, 6, 7}
 
-	wtr, err := NewWriter("data/tmp.npy")
+	wtr, err := NewFileWriter("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +97,7 @@ func Test_int64(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := ReaderFromStream(fid)
+	rdr, err := NewReader(fid)
 	if err != nil {
 		panic(err)
 	}
@@ -114,7 +114,7 @@ func Test_int32(t *testing.T) {
 
 	data := []int32{0, 1, 2, 3, 4, 5, 6, 7}
 
-	wtr, err := NewWriter("data/tmp.npy")
+	wtr, err := NewFileWriter("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
@@ -123,11 +123,11 @@ func Test_int32(t *testing.T) {
 		panic(err)
 	}
 
-	fid, err := os.Open("data/tmp.npy")
+	r, err := os.Open("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := ReaderFromStream(fid)
+	rdr, err := NewReader(r)
 	if err != nil {
 		panic(err)
 	}
@@ -144,7 +144,7 @@ func Test_int16(t *testing.T) {
 
 	data := []int16{0, 1, 2, 3, 4, 5, 6, 7}
 
-	wtr, err := NewWriter("data/tmp.npy")
+	wtr, err := NewFileWriter("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
@@ -153,11 +153,11 @@ func Test_int16(t *testing.T) {
 		panic(err)
 	}
 
-	fid, err := os.Open("data/tmp.npy")
+	r, err := os.Open("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := ReaderFromStream(fid)
+	rdr, err := NewReader(r)
 	if err != nil {
 		panic(err)
 	}
@@ -174,7 +174,7 @@ func Test_int8(t *testing.T) {
 
 	data := []int8{0, 1, 2, 3, 4, 5, 6, 7}
 
-	wtr, err := NewWriter("data/tmp.npy")
+	wtr, err := NewFileWriter("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
@@ -183,11 +183,11 @@ func Test_int8(t *testing.T) {
 		panic(err)
 	}
 
-	fid, err := os.Open("data/tmp.npy")
+	r, err := os.Open("data/tmp.npy")
 	if err != nil {
 		panic(err)
 	}
-	rdr, err := ReaderFromStream(fid)
+	rdr, err := NewReader(r)
 	if err != nil {
 		panic(err)
 	}

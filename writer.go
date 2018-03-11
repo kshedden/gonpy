@@ -30,23 +30,6 @@ type NpyWriter struct {
 	w io.WriteCloser
 }
 
-// NewWriter returns a NpyWriter that can be used to write data to a
-// Numpy binary format file.  After creation, call one of the WriteXX
-// methods to write array data to the file.  The file is automatically
-// closed at the end of that call.  Only one array can be written.
-//
-// Note: this may be changed to take a io.Writer in the future.
-// Consider using NewFileWriter or WriterFromStream instead.
-func NewWriter(fname string) (*NpyWriter, error) {
-
-	fid, err := os.Create(fname)
-	if err != nil {
-		return nil, err
-	}
-
-	return WriterFromStream(fid)
-}
-
 // NewFileWriter returns a NpyWriter that can be used to write data to
 // a Numpy binary format file.  After creation, call one of the
 // WriteXX methods to write array data to the file.  The file is
@@ -54,20 +37,20 @@ func NewWriter(fname string) (*NpyWriter, error) {
 // be written.
 func NewFileWriter(fname string) (*NpyWriter, error) {
 
-	fid, err := os.Create(fname)
+	w, err := os.Create(fname)
 	if err != nil {
 		return nil, err
 	}
 
-	return WriterFromStream(fid)
+	return NewWriter(w)
 }
 
 // NewWriter returns a NpyWriter that can be used to write data to an
-// io.WriteCloser is the Numpy binary format.  After creation, call
-// one of the WriteXX methods to write array data to the writer.  The
-// file is automatically closed at the end of that call.  Only one
-// array can be written.
-func WriterFromStream(w io.WriteCloser) (*NpyWriter, error) {
+// io.WriteCloser, using the Numpy binary format.  After creation,
+// call one of the WriteXX methods to write array data to the writer.
+// The file is automatically closed at the end of that call.  Only one
+// array can be written to the writer.
+func NewWriter(w io.WriteCloser) (*NpyWriter, error) {
 
 	wtr := &NpyWriter{
 		w:       w,

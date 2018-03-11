@@ -168,15 +168,6 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 
 }
 
-// ReaderFromStream returns a NpyReader that can be used to obtain the
-// array data as a Go slice of a specific numeric type.
-//
-// Deprecated: use NewReader instead (April, 2017)
-func ReaderFromStream(stream io.Reader) (*NpyReader, error) {
-	rdr, err := NewReader(stream)
-	return rdr, err
-}
-
 // GetFloat64 returns the array data from the npy file as a slice of
 // float64 values.
 func (rdr *NpyReader) GetFloat64() ([]float64, error) {
