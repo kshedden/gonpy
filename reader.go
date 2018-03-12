@@ -14,23 +14,23 @@ import (
 type NpyReader struct {
 
 	// The numpy data type of the array
-	dtype string
+	Dtype string
 
 	// The endianness of the binary data
-	endian binary.ByteOrder
+	Endian binary.ByteOrder
 
 	// The version number of the file format
-	version int
+	Version int
 
 	// The shape of the array as specified in the file.
 	Shape []int
 
-	// Read the data from this source
-	r io.Reader
-
 	// If true, the data are flattened in column-major order,
 	// otherwise they are flattened in row-major order.
 	ColumnMajor bool
+
+	// Read the data from this source
+	r io.Reader
 
 	// Number of elements in the array to be read (obtained from
 	// header).
@@ -48,6 +48,34 @@ func NewFileReader(f string) (*NpyReader, error) {
 	}
 	r, err := NewReader(fid)
 	return r, err
+}
+
+// Parse the shape string in the file header.
+func parseShape(header []byte) ([]int, int, error) {
+
+	re := regexp.MustCompile(`'shape':\s*\(([^\(]*)\)`)
+	ma := re.FindSubmatch(header)
+	if ma == nil {
+		return nil, 0, fmt.Errorf("Shape not found in header.\n")
+	}
+
+	shapes := string(ma[1])
+	shape := make([]int, 0)
+	n_elt := 1
+	for _, s := range strings.Split(shapes, ",") {
+		s = strings.Trim(s, " ")
+		if len(s) == 0 {
+			break
+		}
+		x, err := strconv.Atoi(s)
+		if err != nil {
+			panic(err)
+		}
+		n_elt *= x
+		shape = append(shape, x)
+	}
+
+	return shape, n_elt, nil
 }
 
 // NewReader returns a NpyReader that can be used to obtain array data
@@ -102,15 +130,15 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 	}
 
 	// Read the header
-	header_bytes := make([]byte, header_length)
-	_, err = r.Read(header_bytes)
+	header := make([]byte, header_length)
+	_, err = r.Read(header)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get the dtype
 	re := regexp.MustCompile(`'descr':\s*'([^']*)'`)
-	ma := re.FindSubmatch(header_bytes)
+	ma := re.FindSubmatch(header)
 	if ma == nil {
 		return nil, fmt.Errorf("dtype description not found in header")
 	}
@@ -118,33 +146,16 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 
 	// Get the order information
 	re = regexp.MustCompile(`'fortran_order':\s*(False|True)`)
-	ma = re.FindSubmatch(header_bytes)
+	ma = re.FindSubmatch(header)
 	if ma == nil {
 		return nil, fmt.Errorf("fortran_order not found in header")
 	}
 	fortran_order := string(ma[1])
 
 	// Get the shape information
-	re = regexp.MustCompile(`'shape':\s*\(([^\(]*)\)`)
-	ma = re.FindSubmatch(header_bytes)
-	if ma == nil {
-		return nil, fmt.Errorf("fortran_order not found in header")
-	}
-	shape_string := string(ma[1])
-	svals := strings.Split(shape_string, ",")
-	shape := make([]int, 0)
-	n_elt := 1
-	for _, s := range svals {
-		s = strings.Trim(s, " ")
-		if len(s) == 0 {
-			break
-		}
-		x, err := strconv.Atoi(s)
-		if err != nil {
-			panic(err)
-		}
-		n_elt *= x
-		shape = append(shape, x)
+	shape, n_elt, err := parseShape(header)
+	if err != nil {
+		return nil, err
 	}
 
 	var endian binary.ByteOrder
@@ -156,27 +167,28 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 	}
 
 	rdr := &NpyReader{
-		dtype:       dtype[1:],
+		Dtype:       dtype[1:],
 		ColumnMajor: fortran_order == "True",
 		Shape:       shape,
-		endian:      endian,
+		Endian:      endian,
+		Version:     int(version),
 		n_elt:       n_elt,
 		r:           r,
 	}
 
 	return rdr, nil
-
 }
 
-// GetFloat64 returns the array data from the npy file as a slice of
-// float64 values.
+// GetFloat64 returns the array data as a slice of float64 values.
 func (rdr *NpyReader) GetFloat64() ([]float64, error) {
-	if rdr.dtype != "f8" {
+
+	if rdr.Dtype != "f8" {
 		return nil, fmt.Errorf("Reader does not contain float64 data")
 	}
+
 	data := make([]float64, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.Endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -185,15 +197,16 @@ func (rdr *NpyReader) GetFloat64() ([]float64, error) {
 	return data, nil
 }
 
-// GetFloat32 returns the array data from the npy file as a slice of
-// float32 values.
+// GetFloat32 returns the array data as a slice of float32 values.
 func (rdr *NpyReader) GetFloat32() ([]float32, error) {
-	if rdr.dtype != "f4" {
+
+	if rdr.Dtype != "f4" {
 		return nil, fmt.Errorf("Reader does not contain float32 data")
 	}
+
 	data := make([]float32, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.Endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -202,15 +215,16 @@ func (rdr *NpyReader) GetFloat32() ([]float32, error) {
 	return data, nil
 }
 
-// GetInt8 returns the array data from the npy file as a slice of int8
-// values.
+// GetInt8 returns the array data as a slice of int8 values.
 func (rdr *NpyReader) GetInt8() ([]int8, error) {
-	if rdr.dtype != "i1" {
+
+	if rdr.Dtype != "i1" {
 		return nil, fmt.Errorf("Reader does not contain int8 data")
 	}
+
 	data := make([]int8, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.Endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -219,15 +233,16 @@ func (rdr *NpyReader) GetInt8() ([]int8, error) {
 	return data, nil
 }
 
-// GetInt16 returns the array data from the npy file as a slice of int16
-// values.
+// GetInt16 returns the array data as a slice of int16 values.
 func (rdr *NpyReader) GetInt16() ([]int16, error) {
-	if rdr.dtype != "i2" {
+
+	if rdr.Dtype != "i2" {
 		return nil, fmt.Errorf("Reader does not contain int16 data")
 	}
+
 	data := make([]int16, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.Endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -236,15 +251,16 @@ func (rdr *NpyReader) GetInt16() ([]int16, error) {
 	return data, nil
 }
 
-// GetInt32 returns the array data from the npy file as a slice of int32
-// values.
+// GetInt32 returns the array data as a slice of int32 values.
 func (rdr *NpyReader) GetInt32() ([]int32, error) {
-	if rdr.dtype != "i4" {
+
+	if rdr.Dtype != "i4" {
 		return nil, fmt.Errorf("Reader does not contain int32 data")
 	}
+
 	data := make([]int32, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.Endian, &data[k])
 		if err != nil {
 			return nil, err
 		}
@@ -253,15 +269,16 @@ func (rdr *NpyReader) GetInt32() ([]int32, error) {
 	return data, nil
 }
 
-// GetInt64 returns the array data from the npy file as a slice of int64
-// values.
+// GetInt64 returns the array data as a slice of int64 values.
 func (rdr *NpyReader) GetInt64() ([]int64, error) {
-	if rdr.dtype != "i8" {
+
+	if rdr.Dtype != "i8" {
 		return nil, fmt.Errorf("Reader does not contain int64 data")
 	}
+
 	data := make([]int64, rdr.n_elt)
 	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.endian, &data[k])
+		err := binary.Read(rdr.r, rdr.Endian, &data[k])
 		if err != nil {
 			return nil, err
 		}

@@ -29,36 +29,37 @@ The following example shows how to read a npy file into a slice of
 float64 values (for clarity error handling is omitted).
 
 ```
-rdr, _ := gonpy.NewFileReader("data.npy")
-data, _ := rdr.GetFloat64()
+r, _ := gonpy.NewFileReader("data.npy")
+data, _ := r.GetFloat64()
 ```
 
-The `rdr` object has fields such sas `rdr.Shape` that provide
-additional information about the array.
+The reader value has fields such sas `r.Shape` that provide additional
+information about the array.
 
 The following example shows how to write a slice of int32 values to a
 npy file (again, error handling is omitted).
 
 ```
-wtr, _ := gonpy.NewFileWriter("data.npy")
-_ = wtr.WriteFloat64(data)
+w, _ := gonpy.NewFileWriter("data.npy")
+_ = w.WriteFloat64(data)
 ```
 
 To specify a shape or other attributes, modify the writer object
 before writing the array, for example:
 
 ```
-wtr, _ := gonpy.NewFileWriter("data.npy")
-wtr.Shape = []int32{50, 2}
-_ = wtr.WriteFloat64(data)
+w, _ := gonpy.NewFileWriter("data.npy")
+w.Shape = []int32{50, 2}
+w.Version = 2
+_ = w.WriteFloat64(data)
 ```
 
 To write to a stream, say a gzip stream, use the following:
 
 ```
-fid, _ := os.Open("data.npy.gz")
-gid := gzip.NewWriter(fid)
-wtr, _ := gonpy.WriterFromStream(gid)
-_ = wtr.WriteFloat64(data)
+f, _ := os.Open("data.npy.gz")
+g := gzip.NewWriter(f)
+w, _ := gonpy.WriterFromStream(g)
+_ = w.WriteFloat64(data)
 fid.Close()
 ```

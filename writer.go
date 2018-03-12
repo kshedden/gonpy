@@ -27,6 +27,7 @@ type NpyWriter struct {
 	// Defaults to 1, can be set to 2 before writing the data.
 	Version int
 
+	// The writer to which the data are written
 	w io.WriteCloser
 }
 
@@ -34,7 +35,7 @@ type NpyWriter struct {
 // a Numpy binary format file.  After creation, call one of the
 // WriteXX methods to write array data to the file.  The file is
 // automatically closed at the end of that call.  Only one array can
-// be written.
+// be written to a file.
 func NewFileWriter(fname string) (*NpyWriter, error) {
 
 	w, err := os.Create(fname)
