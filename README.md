@@ -61,5 +61,5 @@ f, _ := os.Open("data.npy.gz")
 g := gzip.NewWriter(f)
 w, _ := gonpy.WriterFromStream(g)
 _ = w.WriteFloat64(data)
-fid.Close()
+f.Close()
 ```
