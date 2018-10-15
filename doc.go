@@ -16,8 +16,7 @@ package gonpy
   The writer defaults to writing the data as a vector.  The Shape
   field of the NpyWriter struct can be used to set other shapes.
 
-  Unsigned numeric data types, fixed-width string types, compound
-  dtypes, record arrays, and time types are not supported (file an
-  issue if any of these are needed).  Python object types are not
-  supported.
+  Fixed-width string types, compound dtypes, record arrays, and time
+  types are not supported (file an issue if any of these are needed).
+  Python object types are of course not supported.
 */
