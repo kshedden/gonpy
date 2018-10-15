@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"go/format"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -32,7 +33,9 @@ var (
 
 func main() {
 
-	tmpl, err := template.ParseFiles("defs.template")
+	tmplFname := os.Args[1]
+
+	tmpl, err := template.ParseFiles(tmplFname)
 	if err != nil {
 		panic(err)
 	}
@@ -49,14 +52,26 @@ func main() {
 		panic(err)
 	}
 
-	out, err := os.Create("defs_gen.go")
+	var outfile string
+	if strings.Contains(tmplFname, "test") {
+		outfile = strings.Replace(tmplFname, "_test.template", "_gen_test.go", 1)
+	} else {
+		outfile = strings.Replace(tmplFname, ".template", "_gen.go", 1)
+	}
+	if tmplFname == outfile {
+		panic("Can't overwrite template file\n")
+	}
+
+	out, err := os.Create(outfile)
 	if err != nil {
 		panic(err)
 	}
+
 	out.WriteString("// GENERATED CODE, DO NOT EDIT\n\n")
 	_, err = out.Write(p)
 	if err != nil {
 		panic(err)
 	}
+
 	out.Close()
 }

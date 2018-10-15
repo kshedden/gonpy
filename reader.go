@@ -1,6 +1,6 @@
 package gonpy
 
-//go:generate go run gen.go
+//go:generate go run gen.go defs.template
 
 import (
 	"encoding/binary"
