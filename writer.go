@@ -48,9 +48,9 @@ func NewFileWriter(fname string) (*NpyWriter, error) {
 
 // NewWriter returns a NpyWriter that can be used to write data to an
 // io.WriteCloser, using the Numpy binary format.  After creation,
-// call one of the WriteXX methods to write array data to the writer.
+// call one of the WriteXXX methods to write array data to the writer.
 // The file is automatically closed at the end of that call.  Only one
-// array can be written to the writer.
+// slice can be written to the writer.
 func NewWriter(w io.WriteCloser) (*NpyWriter, error) {
 
 	wtr := &NpyWriter{
@@ -60,126 +60,6 @@ func NewWriter(w io.WriteCloser) (*NpyWriter, error) {
 	}
 
 	return wtr, nil
-}
-
-// WriteFloat64 writes a float64 slice in npy format.
-func (wtr *NpyWriter) WriteFloat64(data []float64) error {
-
-	err := wtr.write_header("f8", len(data))
-	if err != nil {
-		return err
-	}
-
-	for _, v := range data {
-		err := binary.Write(wtr.w, wtr.Endian, v)
-		if err != nil {
-			return err
-		}
-	}
-
-	wtr.w.Close()
-
-	return nil
-}
-
-// WriteFloat32 writes a float32 slice in npy format.
-func (wtr *NpyWriter) WriteFloat32(data []float32) error {
-
-	err := wtr.write_header("f4", len(data))
-	if err != nil {
-		return err
-	}
-
-	for _, v := range data {
-		err := binary.Write(wtr.w, wtr.Endian, v)
-		if err != nil {
-			return err
-		}
-	}
-
-	wtr.w.Close()
-
-	return nil
-}
-
-// WriteInt64 writes a int64 slice in npy format.
-func (wtr *NpyWriter) WriteInt64(data []int64) error {
-
-	err := wtr.write_header("i8", len(data))
-	if err != nil {
-		return err
-	}
-
-	for _, v := range data {
-		err := binary.Write(wtr.w, wtr.Endian, v)
-		if err != nil {
-			return err
-		}
-	}
-
-	wtr.w.Close()
-
-	return nil
-}
-
-// WriteInt32 writes a int32 slice in npy format.
-func (wtr *NpyWriter) WriteInt32(data []int32) error {
-
-	err := wtr.write_header("i4", len(data))
-	if err != nil {
-		return err
-	}
-
-	for _, v := range data {
-		err := binary.Write(wtr.w, wtr.Endian, v)
-		if err != nil {
-			return err
-		}
-	}
-
-	wtr.w.Close()
-
-	return nil
-}
-
-// WriteInt16 writes a int16 slice in npy format.
-func (wtr *NpyWriter) WriteInt16(data []int16) error {
-
-	err := wtr.write_header("i2", len(data))
-	if err != nil {
-		return err
-	}
-
-	for _, v := range data {
-		err := binary.Write(wtr.w, wtr.Endian, v)
-		if err != nil {
-			return err
-		}
-	}
-
-	wtr.w.Close()
-
-	return nil
-}
-
-// WriteInt8 writes a int8 slice in npy format.
-func (wtr *NpyWriter) WriteInt8(data []int8) error {
-
-	err := wtr.write_header("i1", len(data))
-	if err != nil {
-		return err
-	}
-
-	for _, v := range data {
-		err := binary.Write(wtr.w, wtr.Endian, v)
-		if err != nil {
-			return err
-		}
-	}
-
-	wtr.w.Close()
-
-	return nil
 }
 
 func (wtr *NpyWriter) write_header(dtype string, length int) error {

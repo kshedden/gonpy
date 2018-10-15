@@ -1,5 +1,7 @@
 package gonpy
 
+//go:generate go run gen.go
+
 import (
 	"encoding/binary"
 	"fmt"
@@ -37,9 +39,9 @@ type NpyReader struct {
 	n_elt int
 }
 
-// NewFileReader is a convenience method returning a NpyReader that
-// can be used to obtain array data from the given named file.  Call
-// one of the GetXXX methods to obtain the data slice.
+// NewFileReader returns a NpyReader that can be used to obtain array
+// data from the given named file.  Call one of the GetXXX methods to
+// obtain the data as a Go slice.
 func NewFileReader(f string) (*NpyReader, error) {
 
 	fid, err := os.Open(f)
@@ -177,112 +179,4 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 	}
 
 	return rdr, nil
-}
-
-// GetFloat64 returns the array data as a slice of float64 values.
-func (rdr *NpyReader) GetFloat64() ([]float64, error) {
-
-	if rdr.Dtype != "f8" {
-		return nil, fmt.Errorf("Reader does not contain float64 data")
-	}
-
-	data := make([]float64, rdr.n_elt)
-	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.Endian, &data[k])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return data, nil
-}
-
-// GetFloat32 returns the array data as a slice of float32 values.
-func (rdr *NpyReader) GetFloat32() ([]float32, error) {
-
-	if rdr.Dtype != "f4" {
-		return nil, fmt.Errorf("Reader does not contain float32 data")
-	}
-
-	data := make([]float32, rdr.n_elt)
-	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.Endian, &data[k])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return data, nil
-}
-
-// GetInt8 returns the array data as a slice of int8 values.
-func (rdr *NpyReader) GetInt8() ([]int8, error) {
-
-	if rdr.Dtype != "i1" {
-		return nil, fmt.Errorf("Reader does not contain int8 data")
-	}
-
-	data := make([]int8, rdr.n_elt)
-	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.Endian, &data[k])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return data, nil
-}
-
-// GetInt16 returns the array data as a slice of int16 values.
-func (rdr *NpyReader) GetInt16() ([]int16, error) {
-
-	if rdr.Dtype != "i2" {
-		return nil, fmt.Errorf("Reader does not contain int16 data")
-	}
-
-	data := make([]int16, rdr.n_elt)
-	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.Endian, &data[k])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return data, nil
-}
-
-// GetInt32 returns the array data as a slice of int32 values.
-func (rdr *NpyReader) GetInt32() ([]int32, error) {
-
-	if rdr.Dtype != "i4" {
-		return nil, fmt.Errorf("Reader does not contain int32 data")
-	}
-
-	data := make([]int32, rdr.n_elt)
-	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.Endian, &data[k])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return data, nil
-}
-
-// GetInt64 returns the array data as a slice of int64 values.
-func (rdr *NpyReader) GetInt64() ([]int64, error) {
-
-	if rdr.Dtype != "i8" {
-		return nil, fmt.Errorf("Reader does not contain int64 data")
-	}
-
-	data := make([]int64, rdr.n_elt)
-	for k := 0; k < rdr.n_elt; k++ {
-		err := binary.Read(rdr.r, rdr.Endian, &data[k])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return data, nil
 }
