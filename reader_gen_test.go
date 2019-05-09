@@ -8,6 +8,24 @@ import (
 	"testing"
 )
 
+func checkComplex128(data []complex128) bool {
+	for k := 0; k < len(data); k++ {
+		if data[k] != complex(float64(k), 0.0) {
+			return false
+		}
+	}
+	return true
+}
+
+func checkComplex64(data []complex64) bool {
+	for k := 0; k < len(data); k++ {
+		if data[k] != complex(float32(k), 0.0) {
+			return false
+		}
+	}
+	return true
+}
+
 func checkFloat64(data []float64) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != float64(k) {
@@ -96,6 +114,58 @@ func checkInt8(data []int8) bool {
 		}
 	}
 	return true
+}
+
+func TestReadComplex128(t *testing.T) {
+
+	files := getFlist("complex128")
+
+	for _, fname := range files {
+
+		fid, err := os.Open(path.Join("data", fname))
+		if err != nil {
+			panic(err)
+		}
+
+		rdr, err := NewReader(fid)
+		if err != nil {
+			panic(err)
+		}
+		data, err := rdr.GetComplex128()
+		if err != nil {
+			panic(err)
+		}
+
+		if !checkComplex128(data) {
+			t.Fail()
+		}
+	}
+}
+
+func TestReadComplex64(t *testing.T) {
+
+	files := getFlist("complex64")
+
+	for _, fname := range files {
+
+		fid, err := os.Open(path.Join("data", fname))
+		if err != nil {
+			panic(err)
+		}
+
+		rdr, err := NewReader(fid)
+		if err != nil {
+			panic(err)
+		}
+		data, err := rdr.GetComplex64()
+		if err != nil {
+			panic(err)
+		}
+
+		if !checkComplex64(data) {
+			t.Fail()
+		}
+	}
 }
 
 func TestReadFloat64(t *testing.T) {
