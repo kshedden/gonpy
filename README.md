@@ -10,7 +10,7 @@ __gonpy__ reads and writes Numpy binary array data to/from Go slices
 
 The npy file specification is here:
 
-http://docs.scipy.org/doc/numpy/neps/npy-format.html
+https://www.numpy.org/devdocs/reference/generated/numpy.lib.format.html
 
 The documentation for this package can be found here:
 
