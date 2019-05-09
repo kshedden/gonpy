@@ -36,7 +36,7 @@ type NpyReader struct {
 
 	// Number of elements in the array to be read (obtained from
 	// header).
-	n_elt int
+	nElt int
 }
 
 // NewFileReader returns a NpyReader that can be used to obtain array
@@ -63,7 +63,7 @@ func parseShape(header []byte) ([]int, int, error) {
 
 	shapes := string(ma[1])
 	shape := make([]int, 0)
-	n_elt := 1
+	nElt := 1
 	for _, s := range strings.Split(shapes, ",") {
 		s = strings.Trim(s, " ")
 		if len(s) == 0 {
@@ -73,11 +73,11 @@ func parseShape(header []byte) ([]int, int, error) {
 		if err != nil {
 			panic(err)
 		}
-		n_elt *= x
+		nElt *= x
 		shape = append(shape, x)
 	}
 
-	return shape, n_elt, nil
+	return shape, nElt, nil
 }
 
 // NewReader returns a NpyReader that can be used to obtain array data
@@ -117,22 +117,22 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 	}
 
 	// Get the size in bytes of the header
-	var header_length int
+	var headerLength int
 	if version == 1 {
 		var hl uint16
 		err = binary.Read(r, binary.LittleEndian, &hl)
-		header_length = int(hl)
+		headerLength = int(hl)
 	} else {
 		var hl uint32
 		err = binary.Read(r, binary.LittleEndian, &hl)
-		header_length = int(hl)
+		headerLength = int(hl)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	// Read the header
-	header := make([]byte, header_length)
+	header := make([]byte, headerLength)
 	_, err = r.Read(header)
 	if err != nil {
 		return nil, err
@@ -152,29 +152,26 @@ func NewReader(r io.Reader) (*NpyReader, error) {
 	if ma == nil {
 		return nil, fmt.Errorf("fortran_order not found in header")
 	}
-	fortran_order := string(ma[1])
+	fortranOrder := string(ma[1])
 
 	// Get the shape information
-	shape, n_elt, err := parseShape(header)
+	shape, nElt, err := parseShape(header)
 	if err != nil {
 		return nil, err
 	}
 
-	var endian binary.ByteOrder
+	var endian binary.ByteOrder = binary.LittleEndian
 	if strings.HasPrefix(dtype, ">") {
 		endian = binary.BigEndian
-	} else {
-		// Default
-		endian = binary.LittleEndian
 	}
 
 	rdr := &NpyReader{
 		Dtype:       dtype[1:],
-		ColumnMajor: fortran_order == "True",
+		ColumnMajor: fortranOrder == "True",
 		Shape:       shape,
 		Endian:      endian,
 		Version:     int(version),
-		n_elt:       n_elt,
+		nElt:        nElt,
 		r:           r,
 	}
 

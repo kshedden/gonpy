@@ -13,7 +13,7 @@ import (
 	    	return nil, fmt.Errorf("Reader does not contain {{ .TypeL }} data")
 	    }
 
-    	data := make([]{{ .TypeL }}, rdr.n_elt)
+    	data := make([]{{ .TypeL }}, rdr.nElt)
 		err := binary.Read(rdr.r, rdr.Endian, &data)
 		if err != nil {
 		    return nil, err
@@ -27,7 +27,7 @@ import (
     // Write{{ .TypeU }} writes a slice of {{ .TypeL }} values in npy format.
     func (wtr *NpyWriter) Write{{ .TypeU }}(data []{{ .TypeL }}) error {
 
-	    err := wtr.write_header("{{ .TypeCode }}", len(data))
+	    err := wtr.writeHeader("{{ .TypeCode }}", len(data))
 	    if err != nil {
 		    return err
 	    }

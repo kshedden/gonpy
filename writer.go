@@ -62,7 +62,7 @@ func NewWriter(w io.WriteCloser) (*NpyWriter, error) {
 	return wtr, nil
 }
 
-func (wtr *NpyWriter) write_header(dtype string, length int) error {
+func (wtr *NpyWriter) writeHeader(dtype string, length int) error {
 
 	_, err := wtr.w.Write([]byte("\x93NUMPY"))
 	if err != nil {
@@ -85,15 +85,15 @@ func (wtr *NpyWriter) write_header(dtype string, length int) error {
 		dtype = ">" + dtype
 	}
 
-	var shape_string string
+	var shapeString string
 	if wtr.Shape != nil {
-		shape_string = ""
+		shapeString = ""
 		for _, v := range wtr.Shape {
-			shape_string = shape_string + fmt.Sprintf("%d,", v)
+			shapeString += fmt.Sprintf("%d,", v)
 		}
-		shape_string = "(" + shape_string + ")"
+		shapeString = "(" + shapeString + ")"
 	} else {
-		shape_string = fmt.Sprintf("(%d,)", length)
+		shapeString = fmt.Sprintf("(%d,)", length)
 	}
 
 	cmaj := "False"
@@ -102,7 +102,7 @@ func (wtr *NpyWriter) write_header(dtype string, length int) error {
 	}
 
 	header := fmt.Sprintf("{'descr': '%s', 'fortran_order': %s, 'shape': %s,}",
-		dtype, cmaj, shape_string)
+		dtype, cmaj, shapeString)
 
 	pad := 16 - ((10 + len(header)) % 16)
 	if wtr.Version == 2 {
