@@ -55,6 +55,54 @@ func TestWriteComplex128(t *testing.T) {
 	}
 }
 
+func TestWriteComplex64(t *testing.T) {
+
+	data := []complex64{0, 1, 2, 3, 4, 5, 6, 7}
+
+	for shape := 0; shape < 4; shape++ {
+
+		wtr, err := NewFileWriter("data/tmp.npy")
+		if err != nil {
+			panic(err)
+		}
+
+		switch shape {
+		case 0:
+			wtr.Shape = []int{4, 2}
+		case 1:
+			wtr.Shape = []int{8, 1}
+		case 2:
+			wtr.Shape = []int{1, 8}
+		case 3:
+			wtr.Shape = nil
+		}
+
+		err = wtr.WriteComplex64(data)
+		if err != nil {
+			panic(err)
+		}
+
+		r, err := os.Open("data/tmp.npy")
+		if err != nil {
+			panic(err)
+		}
+
+		rdr, err := NewReader(r)
+		if err != nil {
+			panic(err)
+		}
+
+		data, err = rdr.GetComplex64()
+		if err != nil {
+			panic(err)
+		}
+
+		if !checkComplex64(data) {
+			t.Fail()
+		}
+	}
+}
+
 func TestWriteFloat64(t *testing.T) {
 
 	data := []float64{0, 1, 2, 3, 4, 5, 6, 7}

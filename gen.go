@@ -19,6 +19,7 @@ type Dtype struct {
 var (
 	Ftypes = []Dtype{
 		Dtype{"Complex128", "complex128", "c16"},
+		Dtype{"Complex64", "complex64", "c8"},
 		Dtype{"Float64", "float64", "f8"},
 		Dtype{"Float32", "float32", "f4"},
 		Dtype{"Uint64", "uint64", "u8"},
