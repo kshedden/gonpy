@@ -7,6 +7,22 @@ import (
 	"fmt"
 )
 
+// GetComplex128 returns the array data as a slice of complex128 values.
+func (rdr *NpyReader) GetComplex128() ([]complex128, error) {
+
+	if rdr.Dtype != "c16" {
+		return nil, fmt.Errorf("Reader does not contain complex128 data")
+	}
+
+	data := make([]complex128, rdr.n_elt)
+	err := binary.Read(rdr.r, rdr.Endian, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
 // GetFloat64 returns the array data as a slice of float64 values.
 func (rdr *NpyReader) GetFloat64() ([]float64, error) {
 
@@ -165,6 +181,24 @@ func (rdr *NpyReader) GetInt8() ([]int8, error) {
 	}
 
 	return data, nil
+}
+
+// WriteComplex128 writes a slice of complex128 values in npy format.
+func (wtr *NpyWriter) WriteComplex128(data []complex128) error {
+
+	err := wtr.write_header("c16", len(data))
+	if err != nil {
+		return err
+	}
+
+	err = binary.Write(wtr.w, wtr.Endian, data)
+	if err != nil {
+		return err
+	}
+
+	wtr.w.Close()
+
+	return nil
 }
 
 // WriteFloat64 writes a slice of float64 values in npy format.
