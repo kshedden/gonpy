@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.com/kshedden/gonpy.svg?branch=master)](https://travis-ci.com/kshedden/gonpy)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kshedden/gonpy)](https://goreportcard.com/report/github.com/kshedden/gonpy)
+[![codecov](https://codecov.io/gh/kshedden/gonpy/branch/master/graph/badge.svg)](https://codecov.io/gh/kshedden/gonpy)
+[![GoDoc](https://godoc.org/github.com/kshedden/gonpy?status.png)](https://godoc.org/github.com/kshedden/gonpy)
+
 gonpy : Read Numpy binary files (.npy files) in Golang
 ======================================================
 

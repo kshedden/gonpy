@@ -9,14 +9,19 @@ import (
 {{- range . }}
     func check{{ .TypeU }}(data []{{ .TypeL }}) bool {
 	    for k := 0; k < len(data); k++ {
-		    if data[k] != {{ .TypeL }}(k) {
+	        {{- if eq .TypeCode "c16" }}
+		        if data[k] != complex(float64(k), 0) {
+		    {{- else if eq .TypeCode "c8" }}
+		        if data[k] != complex(float32(k), 0) {
+            {{- else }}
+		        if data[k] != {{ .TypeL }}(k) {
+		    {{- end }}
 			    return false
 		    }
 	    }
 	    return true
     }
-{{ end }}
-
+{{- end }}
 
 {{- range . }}
     func TestRead{{ .TypeU }}(t *testing.T) {

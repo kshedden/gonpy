@@ -10,22 +10,20 @@ import (
 
 func checkComplex128(data []complex128) bool {
 	for k := 0; k < len(data); k++ {
-		if data[k] != complex(float64(k), 0.0) {
+		if data[k] != complex(float64(k), 0) {
 			return false
 		}
 	}
 	return true
 }
-
 func checkComplex64(data []complex64) bool {
 	for k := 0; k < len(data); k++ {
-		if data[k] != complex(float32(k), 0.0) {
+		if data[k] != complex(float32(k), 0) {
 			return false
 		}
 	}
 	return true
 }
-
 func checkFloat64(data []float64) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != float64(k) {
@@ -34,7 +32,6 @@ func checkFloat64(data []float64) bool {
 	}
 	return true
 }
-
 func checkFloat32(data []float32) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != float32(k) {
@@ -43,7 +40,6 @@ func checkFloat32(data []float32) bool {
 	}
 	return true
 }
-
 func checkUint64(data []uint64) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != uint64(k) {
@@ -52,7 +48,6 @@ func checkUint64(data []uint64) bool {
 	}
 	return true
 }
-
 func checkUint32(data []uint32) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != uint32(k) {
@@ -61,7 +56,6 @@ func checkUint32(data []uint32) bool {
 	}
 	return true
 }
-
 func checkUint16(data []uint16) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != uint16(k) {
@@ -70,7 +64,6 @@ func checkUint16(data []uint16) bool {
 	}
 	return true
 }
-
 func checkUint8(data []uint8) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != uint8(k) {
@@ -79,7 +72,6 @@ func checkUint8(data []uint8) bool {
 	}
 	return true
 }
-
 func checkInt64(data []int64) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != int64(k) {
@@ -88,7 +80,6 @@ func checkInt64(data []int64) bool {
 	}
 	return true
 }
-
 func checkInt32(data []int32) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != int32(k) {
@@ -97,7 +88,6 @@ func checkInt32(data []int32) bool {
 	}
 	return true
 }
-
 func checkInt16(data []int16) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != int16(k) {
@@ -106,7 +96,6 @@ func checkInt16(data []int16) bool {
 	}
 	return true
 }
-
 func checkInt8(data []int8) bool {
 	for k := 0; k < len(data); k++ {
 		if data[k] != int8(k) {
@@ -115,7 +104,6 @@ func checkInt8(data []int8) bool {
 	}
 	return true
 }
-
 func TestReadComplex128(t *testing.T) {
 
 	files := getFlist("complex128")
