@@ -18,18 +18,18 @@ type Dtype struct {
 
 var (
 	Ftypes = []Dtype{
-		Dtype{"Complex128", "complex128", "c16"},
-		Dtype{"Complex64", "complex64", "c8"},
-		Dtype{"Float64", "float64", "f8"},
-		Dtype{"Float32", "float32", "f4"},
-		Dtype{"Uint64", "uint64", "u8"},
-		Dtype{"Uint32", "uint32", "u4"},
-		Dtype{"Uint16", "uint16", "u2"},
-		Dtype{"Uint8", "uint8", "u1"},
-		Dtype{"Int64", "int64", "i8"},
-		Dtype{"Int32", "int32", "i4"},
-		Dtype{"Int16", "int16", "i2"},
-		Dtype{"Int8", "int8", "i1"},
+		{"Complex128", "complex128", "c16"},
+		{"Complex64", "complex64", "c8"},
+		{"Float64", "float64", "f8"},
+		{"Float32", "float32", "f4"},
+		{"Uint64", "uint64", "u8"},
+		{"Uint32", "uint32", "u4"},
+		{"Uint16", "uint16", "u2"},
+		{"Uint8", "uint8", "u1"},
+		{"Int64", "int64", "i8"},
+		{"Int32", "int32", "i4"},
+		{"Int16", "int16", "i2"},
+		{"Int8", "int8", "i1"},
 	}
 )
 
