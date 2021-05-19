@@ -64,7 +64,7 @@ To write to a stream, say a gzip stream, use the following:
 ```
 f, _ := os.Create("data.npy.gz")
 g := gzip.NewWriter(f)
-w, _ := gonpy.WriterFromStream(g)
+w, _ := gonpy.NewWriter(g)
 _ = w.WriteFloat64(data)
 f.Close()
 ```
